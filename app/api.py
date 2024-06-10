@@ -20,7 +20,12 @@ async def read_root() -> dict:
 
 @app.get("/rants", tags=["rants"])
 async def get_rants() -> dict:
-    return {"data": rants}
+    """
+    Get all the rants.
+
+    Returns:
+        dict: A dictionary containing the rants data.
+    """
 
 
 @app.get("/rants/{id}", tags=["rants"])
@@ -34,3 +39,12 @@ async def get_single_rant(id: int) -> dict:
             return {
                 "data": rant
             }
+
+
+@app.post("/rants", tags=["rants"])
+async def create_rant(rant: RantSchema) -> dict:
+    rant.id = len(rants) + 1
+    rants.append(rant.model_dump())
+    return {
+        "data": "rant added successfully"
+        }
