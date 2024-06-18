@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from typing import Dict
 from app.model import RantSchema
 
 rants = [
@@ -14,12 +15,13 @@ app = FastAPI()
 
 
 @app.get("/", tags=["root"])
-async def read_root() -> dict:
+async def read_root() -> Dict:
     return {"message": "Welcome to my rant page!"}
 
 
 @app.get("/rants", tags=["rants"])
-async def get_rants() -> dict:
+async def get_rants() -> list(dict):  # type: ignore
+    return rants
     """
     Get all the rants.
 
@@ -29,7 +31,7 @@ async def get_rants() -> dict:
 
 
 @app.get("/rants/{id}", tags=["rants"])
-async def get_single_rant(id: int) -> dict:
+async def get_single_rant(id: int) -> Dict:
     if id > len(rants):
         return {
             "error": "Rant not found with supplied ID"
@@ -42,7 +44,7 @@ async def get_single_rant(id: int) -> dict:
 
 
 @app.post("/rants", tags=["rants"])
-async def create_rant(rant: RantSchema) -> dict:
+async def create_rant(rant: RantSchema) -> Dict:
     rant.id = len(rants) + 1
     rants.append(rant.model_dump())
     return {
