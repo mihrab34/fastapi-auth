@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 from typing import Dict
-from app.model import RantSchema
+from app.auth.auth_handler import sign_jwt
+from app.model import RantSchema, UserSchema, UserLoginSchema
 
 rants = [
     {
@@ -20,14 +21,8 @@ async def read_root() -> Dict:
 
 
 @app.get("/rants", tags=["rants"])
-async def get_rants() -> list(dict):  # type: ignore
-    return rants
-    """
-    Get all the rants.
-
-    Returns:
-        dict: A dictionary containing the rants data.
-    """
+async def get_rants() -> Dict:  # type: ignore
+    return {"data": rants}
 
 
 @app.get("/rants/{id}", tags=["rants"])
@@ -49,4 +44,30 @@ async def create_rant(rant: RantSchema) -> Dict:
     rants.append(rant.model_dump())
     return {
         "data": "rant added successfully"
+        }
+
+
+@app.post("/signup", tags=["user"])
+async def create_user(user: UserSchema = Body(...)):
+    users.append(user)
+    return sign_jwt(user.email)
+
+
+def check_user(data: UserLoginSchema):
+    for user in users:
+        if user.email == data.email and user.password == data.password == data.password:
+            return True
+    return False
+
+
+@app.post("/login", tags=["users"])
+async def login_user(user: UserLoginSchema) -> Dict:
+    for u in users:
+        if u["email"] == user.email and u["password"] == user.password:
+            token = sign_jwt(user.email)
+            return {
+                "data": token
+            }
+    return {
+        "error": "Invalid credentials"
         }
